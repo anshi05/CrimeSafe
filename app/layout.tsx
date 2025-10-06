@@ -33,8 +33,8 @@ export default function RootLayout({
                 <Link href="/dashboard" className="text-slate-600 hover:text-slate-900 transition-colors">
                   Dashboard
                 </Link>
-                <Link href="/map" className="text-slate-600 hover:text-slate-900 transition-colors">
-                  Map
+                <Link href="/analysis" className="text-slate-600 hover:text-slate-900 transition-colors">
+                  Analysis
                 </Link>
                 <Link href="/predict" className="text-slate-600 hover:text-slate-900 transition-colors">
                   Predict
