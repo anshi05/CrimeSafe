@@ -1,292 +1,439 @@
 "use client"
 
 import { useState } from "react"
-import useSWR from "swr"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
-import { Calendar, AlertTriangle, MapPin } from "lucide-react"
-import Link from "next/link"
-import { PieChart, Pie, Cell, Legend } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts"
+import { Shield, AlertTriangle, MapPin, User, Calendar, Calculator } from "lucide-react"
+import { Input } from "@/components/ui/input"
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json())
+interface CitySafetyData {
+  age: number
+  city: string
+  gender: string
+  rank: number
+  safety_score: number
+  year: number
+}
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#A28DFF", "#FF8CDD"]
+interface PredictionResponse {
+  input: {
+    age: number
+    gender: string
+    year: number
+  }
+  most_dangerous_cities: CitySafetyData[]
+  safest_cities: CitySafetyData[]
+  total_cities_analyzed: number
+}
 
-export default function DashboardPage() {
-  const [selectedYear, setSelectedYear] = useState<number>(2024)
-  const [selectedCity, setSelectedCity] = useState<string>("all")
+export default function SafetyPredictionDashboard() {
+  const [age, setAge] = useState<number>(25)
+  const [gender, setGender] = useState<string>("M")
+  const [year, setYear] = useState<number>(2025)
+  const [predictionData, setPredictionData] = useState<PredictionResponse | null>(null)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const { data: locationsData, isLoading } = useSWR(
-    `/api/locations?year=${selectedYear}&topCities=10&topCrimeTypes=10`,
-    fetcher,
-  )
+  const handleAnalyze = async () => {
+    setIsLoading(true)
+    setError(null)
+    
+    try {
+      const response = await fetch("http://localhost:5000/predict", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          age: age,
+          gender: gender,
+          year: year,
+        }),
+      })
 
-  const { data: evaluationData } = useSWR("/api/evaluate", fetcher)
+      if (!response.ok) {
+        throw new Error("Failed to fetch prediction data")
+      }
 
-  const locations = locationsData?.locations || []
-  const monthlyCrimeTrends = locationsData?.monthlyCrimeTrends || []
-  const topCitiesByCrime = locationsData?.topCitiesByCrime || []
-  const topCrimeTypesData = locationsData?.topCrimeTypesData || []
+      const data: PredictionResponse = await response.json()
+      setPredictionData(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred")
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
-  // Calculate statistics
-  const totalCrimes = locations.reduce((sum: number, loc: any) => sum + (loc.year_crime_count || 0), 0)
-  const redZones = locations.filter((loc: any) => loc.zone_classification === "red").length
-  const amberZones = locations.filter((loc: any) => loc.zone_classification === "amber").length
-  const greenZones = locations.filter((loc: any) => loc.zone_classification === "green").length
-
-  // Prepare chart data
-  const zoneDistributionData = [
-    { name: "Red Zones", value: redZones, fill: "#ef4444" },
-    { name: "Amber Zones", value: amberZones, fill: "#f59e0b" },
-    { name: "Green Zones", value: greenZones, fill: "#10b981" },
-  ]
-
-  const topLocations = topCitiesByCrime.map((city: any) => ({
-    name: city.city,
-    crimes: city.crime_count,
-  }))
-
-  // Get unique cities
-  const cities = Array.from(new Set(locations.map((loc: any) => loc.city))).filter(Boolean)
+  // Chart colors
+  const safeColors = ["#10b981", "#34d399", "#6ee7b7", "#a7f3d0", "#d1fae5"]
+  const dangerColors = ["#ef4444", "#f87171", "#fca5a5", "#fecaca", "#fee2e2"]
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-900 mb-2">Crime Analysis Dashboard</h1>
-          <p className="text-slate-600">Comprehensive crime statistics and trends across locations</p>
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">Safety Prediction Dashboard</h1>
+          <p className="text-slate-600 text-lg">
+            Analyze city safety scores based on demographic factors and year
+          </p>
         </div>
 
-        {/* Filters */}
-        <Card className="mb-8">
+        {/* Input Section */}
+        <Card className="mb-8 shadow-lg">
+          <CardHeader className="bg-slate-50 border-b">
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <User className="h-5 w-5" />
+              Personal Safety Analysis
+            </CardTitle>
+            <CardDescription>
+              Enter your details to get personalized safety predictions across cities
+            </CardDescription>
+          </CardHeader>
           <CardContent className="py-6">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <label className="text-sm font-medium text-slate-700 mb-2 block">Select Year</label>
-                <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(Number.parseInt(v))}>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Age Input */}
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-2 block">Age</label>
+                <Input
+                  type="number"
+                  value={age}
+                  onChange={(e) => setAge(Number.parseInt(e.target.value) || 25)}
+                  className="w-full"
+                  min={1}
+                  max={100}
+                />
+              </div>
+
+              {/* Gender Select */}
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-2 block">Gender</label>
+                <Select value={gender} onValueChange={setGender}>
                   <SelectTrigger>
-                    <SelectValue />
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      <SelectValue />
+                    </div>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="2020">2020</SelectItem>
-                    <SelectItem value="2021">2021</SelectItem>
-                    <SelectItem value="2022">2022</SelectItem>
+                    <SelectItem value="M">Male</SelectItem>
+                    <SelectItem value="F">Female</SelectItem>
+                    <SelectItem value="O">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Year Select */}
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-2 block">Year</label>
+                <Select value={year.toString()} onValueChange={(v) => setYear(Number.parseInt(v))}>
+                  <SelectTrigger>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      <SelectValue />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
                     <SelectItem value="2023">2023</SelectItem>
                     <SelectItem value="2024">2024</SelectItem>
+                    <SelectItem value="2025">2025</SelectItem>
+                    <SelectItem value="2026">2026</SelectItem>
+                    <SelectItem value="2027">2027</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="flex-1">
-                <label className="text-sm font-medium text-slate-700 mb-2 block">Select City</label>
-                <Select value={selectedCity} onValueChange={setSelectedCity}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Cities</SelectItem>
-                    {cities.map((city: any) => (
-                      <SelectItem key={city} value={city}>
-                        {city}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
+              {/* Analyze Button */}
               <div className="flex items-end">
-                <Button asChild variant="outline">
-                  <Link href="/map">View Map</Link>
+                <Button 
+                  onClick={handleAnalyze} 
+                  disabled={isLoading}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {isLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <Shield className="h-4 w-4 mr-2" />
+                      Analyze Safety
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
+
+            {error && (
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-700 text-sm">{error}</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* Stats Cards */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600">Total Crimes</CardTitle>
-              <Calendar className="h-4 w-4 text-slate-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-slate-900">{totalCrimes.toLocaleString()}</div>
-              <p className="text-xs text-slate-500 mt-1">in {selectedYear}</p>
-            </CardContent>
-          </Card>
+        {predictionData && (
+          <>
+            {/* Stats Overview */}
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
+              <Card className="bg-white shadow-lg">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-slate-600">Cities Analyzed</CardTitle>
+                  <MapPin className="h-4 w-4 text-blue-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-slate-900">
+                    {predictionData.total_cities_analyzed}
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1">Total cities in analysis</p>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600">Red Zones</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-red-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-red-600">{redZones}</div>
-              <p className="text-xs text-slate-500 mt-1">High risk areas</p>
-            </CardContent>
-          </Card>
+              <Card className="bg-white shadow-lg">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-slate-600">Safest City</CardTitle>
+                  <Shield className="h-4 w-4 text-green-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-600 truncate">
+                    {predictionData.safest_cities[0]?.city || "N/A"}
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Score: {predictionData.safest_cities[0]?.safety_score.toFixed(1) || "N/A"}
+                  </p>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600">Amber Zones</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-amber-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-amber-600">{amberZones}</div>
-              <p className="text-xs text-slate-500 mt-1">Moderate risk areas</p>
-            </CardContent>
-          </Card>
+              <Card className="bg-white shadow-lg">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-slate-600">Most Dangerous City</CardTitle>
+                  <AlertTriangle className="h-4 w-4 text-red-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-red-600 truncate">
+                    {predictionData.most_dangerous_cities[0]?.city || "N/A"}
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Score: {predictionData.most_dangerous_cities[0]?.safety_score.toFixed(1) || "N/A"}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600">Green Zones</CardTitle>
-              <MapPin className="h-4 w-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-green-600">{greenZones}</div>
-              <p className="text-xs text-slate-500 mt-1">Safe areas</p>
-            </CardContent>
-          </Card>
-        </div>
+            {/* Charts Section */}
+            <div className="grid lg:grid-cols-2 gap-6 mb-8">
+              {/* Safest Cities Chart */}
+              <Card className="shadow-lg">
+                <CardHeader className="bg-green-50 border-b">
+                  <CardTitle className="flex items-center gap-2 text-green-800">
+                    <Shield className="h-5 w-5" />
+                    Top 5 Safest Cities
+                  </CardTitle>
+                  <CardDescription>
+                    Cities with highest safety scores for your profile
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={predictionData.safest_cities}>
+                      <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                      <XAxis 
+                        dataKey="city" 
+                        angle={-45}
+                        textAnchor="end"
+                        height={80}
+                        fontSize={12}
+                      />
+                      <YAxis 
+                        domain={[0, 100]}
+                        label={{ value: 'Safety Score', angle: -90, position: 'insideLeft' }}
+                      />
+                      <Tooltip 
+                        formatter={(value) => [`${value}`, 'Safety Score']}
+                        labelFormatter={(label) => `City: ${label}`}
+                      />
+                      <Bar dataKey="safety_score" radius={[4, 4, 0, 0]}>
+                        {predictionData.safest_cities.map((entry, index) => (
+                          <Cell key={`safe-${index}`} fill={safeColors[index % safeColors.length]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
 
-        {/* Charts */}
-        <div className="grid lg:grid-cols-2 gap-6 mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Zone Distribution</CardTitle>
-              <CardDescription>Safety classification across all locations</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={zoneDistributionData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="value" fill="#3b82f6" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+              {/* Most Dangerous Cities Chart */}
+              <Card className="shadow-lg">
+                <CardHeader className="bg-red-50 border-b">
+                  <CardTitle className="flex items-center gap-2 text-red-800">
+                    <AlertTriangle className="h-5 w-5" />
+                    Top 5 Most Dangerous Cities
+                  </CardTitle>
+                  <CardDescription>
+                    Cities with lowest safety scores for your profile
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={predictionData.most_dangerous_cities}>
+                      <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                      <XAxis 
+                        dataKey="city" 
+                        angle={-45}
+                        textAnchor="end"
+                        height={80}
+                        fontSize={12}
+                      />
+                      <YAxis 
+                        domain={[0, 100]}
+                        label={{ value: 'Safety Score', angle: -90, position: 'insideLeft' }}
+                      />
+                      <Tooltip 
+                        formatter={(value) => [`${value}`, 'Safety Score']}
+                        labelFormatter={(label) => `City: ${label}`}
+                      />
+                      <Bar dataKey="safety_score" radius={[4, 4, 0, 0]}>
+                        {predictionData.most_dangerous_cities.map((entry, index) => (
+                          <Cell key={`danger-${index}`} fill={dangerColors[index % dangerColors.length]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Top 10 High-Crime Locations</CardTitle>
-              <CardDescription>Locations with highest crime counts in {selectedYear}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={topLocations} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis dataKey="name" type="category" width={100} />
-                  <Tooltip />
-                  <Bar dataKey="crimes" fill="#3b82f6" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Monthly Crime Trends Chart */}
-        <div className="grid lg:grid-cols-2 gap-6 mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Monthly Crime Trends</CardTitle>
-              <CardDescription>Crimes reported per month in {selectedYear}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={monthlyCrimeTrends}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="crime_count" fill="#8884d8" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Top Crime Types Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Top Crime Types</CardTitle>
-              <CardDescription>Most common crime types in {selectedYear}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={topCrimeTypesData}
-                    dataKey="crime_count"
-                    nameKey="crime_type"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={100}
-                    fill="#8884d8"
-                    label
-                  >
-                    {topCrimeTypesData.map((_entry: any, index: number) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            {/* Cities Lists */}
+            <div className="grid lg:grid-cols-2 gap-6">
+              {/* Safest Cities List */}
+              <Card className="shadow-lg">
+                <CardHeader className="bg-green-50 border-b">
+                  <CardTitle className="flex items-center gap-2 text-green-800">
+                    <Shield className="h-5 w-5" />
+                    Safest Cities Ranking
+                  </CardTitle>
+                  <CardDescription>
+                    Complete list of safest cities based on safety score
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="overflow-hidden">
+                    {predictionData.safest_cities.map((city, index) => (
+                      <div
+                        key={city.city}
+                        className={`flex items-center justify-between p-4 border-b ${
+                          index % 2 === 0 ? 'bg-white' : 'bg-green-50'
+                        } hover:bg-green-100 transition-colors`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center justify-center w-8 h-8 bg-green-100 text-green-800 rounded-full font-semibold text-sm">
+                            {city.rank}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-slate-900">{city.city}</div>
+                            <div className="text-sm text-slate-500">Rank: {city.rank}</div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-green-600">
+                            {city.safety_score.toFixed(1)}
+                          </div>
+                          <div className="text-xs text-slate-500">Safety Score</div>
+                        </div>
+                      </div>
                     ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-        {/* Model Evaluation */}
-        {evaluationData?.success && (
-          <Card>
-            <CardHeader>
-              <CardTitle>ML Model Performance</CardTitle>
-              <CardDescription>Latest model evaluation on 2024 test data</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-3 gap-6">
-                <div>
-                  <div className="text-sm font-medium text-slate-600 mb-1">RMSE</div>
-                  <div className="text-2xl font-bold text-slate-900">
-                    {evaluationData.evaluation.metrics.rmse?.toFixed(2) || "N/A"}
+              {/* Most Dangerous Cities List */}
+              <Card className="shadow-lg">
+                <CardHeader className="bg-red-50 border-b">
+                  <CardTitle className="flex items-center gap-2 text-red-800">
+                    <AlertTriangle className="h-5 w-5" />
+                    Most Dangerous Cities Ranking
+                  </CardTitle>
+                  <CardDescription>
+                    Complete list of cities requiring extra caution
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="overflow-hidden">
+                    {predictionData.most_dangerous_cities.map((city, index) => (
+                      <div
+                        key={city.city}
+                        className={`flex items-center justify-between p-4 border-b ${
+                          index % 2 === 0 ? 'bg-white' : 'bg-red-50'
+                        } hover:bg-red-100 transition-colors`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center justify-center w-8 h-8 bg-red-100 text-red-800 rounded-full font-semibold text-sm">
+                            {city.rank}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-slate-900">{city.city}</div>
+                            <div className="text-sm text-slate-500">Rank: {city.rank}</div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-red-600">
+                            {city.safety_score.toFixed(1)}
+                          </div>
+                          <div className="text-xs text-slate-500">Safety Score</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* User Profile Summary */}
+            <Card className="mt-8 shadow-lg">
+              <CardHeader className="bg-blue-50 border-b">
+                <CardTitle className="flex items-center gap-2 text-blue-800">
+                  <User className="h-5 w-5" />
+                  Analysis Summary
+                </CardTitle>
+                <CardDescription>
+                  Safety prediction based on your input profile
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="py-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                  <div className="p-4 bg-white rounded-lg border">
+                    <div className="text-2xl font-bold text-slate-900">{predictionData.input.age}</div>
+                    <div className="text-sm text-slate-500">Age</div>
+                  </div>
+                  <div className="p-4 bg-white rounded-lg border">
+                    <div className="text-2xl font-bold text-slate-900">
+                      {predictionData.input.gender === 'M' ? 'Male' : predictionData.input.gender === 'F' ? 'Female' : 'Other'}
+                    </div>
+                    <div className="text-sm text-slate-500">Gender</div>
+                  </div>
+                  <div className="p-4 bg-white rounded-lg border">
+                    <div className="text-2xl font-bold text-slate-900">{predictionData.input.year}</div>
+                    <div className="text-sm text-slate-500">Year</div>
                   </div>
                 </div>
-                <div>
-                  <div className="text-sm font-medium text-slate-600 mb-1">MAE</div>
-                  <div className="text-2xl font-bold text-slate-900">
-                    {evaluationData.evaluation.metrics.mae?.toFixed(2) || "N/A"}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-slate-600 mb-1">Classification Accuracy</div>
-                  <div className="text-2xl font-bold text-slate-900">
-                    {evaluationData.evaluation.metrics.classification_accuracy
-                      ? `${(evaluationData.evaluation.metrics.classification_accuracy * 100).toFixed(1)}%`
-                      : "N/A"}
-                  </div>
-                </div>
-              </div>
-              <div className="mt-4 text-sm text-slate-500">
-                Model: {evaluationData.evaluation.model_version} | Trained:{" "}
-                {new Date(evaluationData.evaluation.trained_at).toLocaleDateString()}
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </>
         )}
 
-        {/* Loading State */}
-        {isLoading && (
-          <div className="text-center py-12">
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
-            <p className="mt-4 text-slate-600">Loading dashboard data...</p>
-          </div>
+        {!predictionData && !isLoading && (
+          <Card className="text-center py-12 shadow-lg">
+            <CardContent>
+              <Shield className="h-16 w-16 text-slate-300 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-slate-700 mb-2">Ready to Analyze</h3>
+              <p className="text-slate-500 mb-4">
+                Enter your details above and click "Analyze Safety" to get personalized city safety predictions.
+              </p>
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>
