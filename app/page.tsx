@@ -21,11 +21,11 @@ export default function HomePage() {
             personalized recommendations.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="text-lg">
+            <Button asChild size="lg" variant="outline"  className="text-lg hover:bg-blue-300">
               <Link href="/dashboard">View Dashboard</Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="text-lg bg-transparent">
-              <Link href="/predict">Find Safe Areas</Link>
+            <Button asChild size="lg" variant="outline" className="text-lg bg-transparent hover:bg-blue-300">
+              <Link href="/analysis">View Analysis</Link>
             </Button>
           </div>
         </div>
@@ -34,7 +34,7 @@ export default function HomePage() {
       {/* Features Section */}
       <section className="container mx-auto px-4 py-16">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card>
+          <Card className="hover:bg-gray-100 transition-all duration-300 transform hover:scale-[102%] shadow-lg rounded-xl">
             <CardHeader>
               <Map className="h-10 w-10 text-blue-600 mb-2" />
               <CardTitle>Interactive Maps</CardTitle>
@@ -44,7 +44,7 @@ export default function HomePage() {
             </CardHeader>
           </Card>
 
-          <Card>
+          <Card className="hover:bg-gray-100 transition-all duration-300 transform hover:scale-[102%] shadow-lg rounded-xl">
             <CardHeader>
               <TrendingUp className="h-10 w-10 text-green-600 mb-2" />
               <CardTitle>Predictive Analytics</CardTitle>
@@ -54,7 +54,7 @@ export default function HomePage() {
             </CardHeader>
           </Card>
 
-          <Card>
+          <Card className="hover:bg-gray-100 transition-all duration-300 transform hover:scale-[102%] shadow-lg rounded-xl">
             <CardHeader>
               <Users className="h-10 w-10 text-purple-600 mb-2" />
               <CardTitle>Personalized Safety</CardTitle>
@@ -65,7 +65,7 @@ export default function HomePage() {
             </CardHeader>
           </Card>
 
-          <Card>
+          <Card className="hover:bg-gray-100 transition-all duration-300 transform hover:scale-[102%] shadow-lg rounded-xl">
             <CardHeader>
               <Shield className="h-10 w-10 text-orange-600 mb-2" />
               <CardTitle>Explainable AI</CardTitle>
@@ -80,7 +80,7 @@ export default function HomePage() {
 
       {/* Stats Section */}
       <section className="container mx-auto px-4 py-16">
-        <Card className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+        <Card className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg rounded-xl">
           <CardContent className="py-12">
             <div className="grid md:grid-cols-3 gap-8 text-center">
               <div>
@@ -107,7 +107,7 @@ export default function HomePage() {
           <p className="text-lg text-slate-600 mb-8">
             Start analyzing crime data and get personalized safety recommendations for your area.
           </p>
-          <Button asChild size="lg">
+          <Button asChild size="lg" className="bg-blue-300 rounded-xl hover:bg-blue-400">
             <Link href="/dashboard">Get Started</Link>
           </Button>
         </div>

@@ -96,12 +96,12 @@ export default function SafetyPredictionDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {/* Age Input */}
               <div>
-                <label className="text-sm font-medium text-slate-700 mb-2 block">Age</label>
+                <label className="text-sm font-medium text-slate-700 mb-2 block rounded-md">Age</label>
                 <Input
                   type="number"
                   value={age}
                   onChange={(e) => setAge(Number.parseInt(e.target.value) || 25)}
-                  className="w-full"
+                  className="w-full rounded-md"
                   min={1}
                   max={100}
                 />
@@ -111,16 +111,15 @@ export default function SafetyPredictionDashboard() {
               <div>
                 <label className="text-sm font-medium text-slate-700 mb-2 block">Gender</label>
                 <Select value={gender} onValueChange={setGender}>
-                  <SelectTrigger>
+                  <SelectTrigger className="">
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
                       <SelectValue />
                     </div>
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="w-full bg-white">
                     <SelectItem value="M">Male</SelectItem>
                     <SelectItem value="F">Female</SelectItem>
-                    <SelectItem value="O">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -129,13 +128,13 @@ export default function SafetyPredictionDashboard() {
               <div>
                 <label className="text-sm font-medium text-slate-700 mb-2 block">Year</label>
                 <Select value={year.toString()} onValueChange={(v) => setYear(Number.parseInt(v))}>
-                  <SelectTrigger>
+                  <SelectTrigger className="rounded-md">
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
                       <SelectValue />
                     </div>
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="w-full bg-white">
                     <SelectItem value="2023">2023</SelectItem>
                     <SelectItem value="2024">2024</SelectItem>
                     <SelectItem value="2025">2025</SelectItem>
@@ -435,6 +434,50 @@ export default function SafetyPredictionDashboard() {
             </CardContent>
           </Card>
         )}
+
+        {/* How It Works Section */}
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle>How Personalized Recommendations Work</CardTitle>
+            <CardDescription>Understanding our AI-powered safety analysis</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-3 gap-6">
+              <div>
+                <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mb-3">
+                  <span className="text-xl font-bold text-blue-600">1</span>
+                </div>
+                <h3 className="font-semibold text-slate-900 mb-2">Data Analysis</h3>
+                <p className="text-sm text-slate-600">
+                  We analyze historical crime data from 2020-2024, including crime types, frequencies, and victim
+                  demographics for locations within your specified radius.
+                </p>
+              </div>
+
+              <div>
+                <div className="bg-green-100 rounded-full w-12 h-12 flex items-center justify-center mb-3">
+                  <span className="text-xl font-bold text-green-600">2</span>
+                </div>
+                <h3 className="font-semibold text-slate-900 mb-2">Demographic Weighting</h3>
+                <p className="text-sm text-slate-600">
+                  Our algorithm considers your age and gender to weight crimes affecting similar demographics more
+                  heavily, providing personalized safety scores.
+                </p>
+              </div>
+
+              <div>
+                <div className="bg-purple-100 rounded-full w-12 h-12 flex items-center justify-center mb-3">
+                  <span className="text-xl font-bold text-purple-600">3</span>
+                </div>
+                <h3 className="font-semibold text-slate-900 mb-2">Smart Ranking</h3>
+                <p className="text-sm text-slate-600">
+                  Locations are ranked by safety score, combining crime rates, demographic factors, and distance from
+                  your search location to find the best matches.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

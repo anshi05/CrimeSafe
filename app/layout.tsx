@@ -29,17 +29,18 @@ export default function RootLayout({
                 CrimeSafe
               </Link>
 
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-6 w-full justify-center">
+                <Link href="/" className="text-slate-600 hover:text-slate-900 transition-colors">
+                  Home
+                </Link>
                 <Link href="/dashboard" className="text-slate-600 hover:text-slate-900 transition-colors">
                   Dashboard
                 </Link>
                 <Link href="/analysis" className="text-slate-600 hover:text-slate-900 transition-colors">
                   Analysis
                 </Link>
-                <Link href="/predict" className="text-slate-600 hover:text-slate-900 transition-colors">
-                  Predict
-                </Link>
               </div>
+              <div></div>
             </div>
           </div>
         </nav>
@@ -47,10 +48,10 @@ export default function RootLayout({
         {children}
 
         <footer className="border-t bg-slate-50 mt-16">
-          <div className="container mx-auto px-4 py-8">
+          <div className="container mx-auto px-4 py-4">
             <div className="text-center text-sm text-slate-600">
               <p>CrimeSafe - Crime Analysis & Prediction Platform</p>
-              <p className="mt-2">Built with Next.js, TypeScript, and Machine Learning</p>
+              
             </div>
           </div>
         </footer>

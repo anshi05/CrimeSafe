@@ -1,10 +1,25 @@
 "use client"
 
+import { useState } from "react"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { BarChart3, PieChart, Map, TrendingUp, Users, Shield, Target, Activity, AlertTriangle } from "lucide-react"
 
 export default function GraphicalAnalysisPage() {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+
+  const openDialog = (imageSrc: string) => {
+    setSelectedImage(imageSrc)
+    setIsDialogOpen(true)
+  }
+
+  const closeDialog = () => {
+    setSelectedImage(null)
+    setIsDialogOpen(false)
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="container mx-auto px-4 py-8">
@@ -19,15 +34,15 @@ export default function GraphicalAnalysisPage() {
         {/* Main Tabs for different analysis categories */}
         <Tabs defaultValue="overview" className="mb-8">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
+            <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:font-semibold hover:bg-blue-100 transition-colors">
               <BarChart3 className="h-4 w-4" />
               Overview
             </TabsTrigger>
-             <TabsTrigger value="predictive" className="flex items-center gap-2">
+             <TabsTrigger value="predictive" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:font-semibold hover:bg-blue-100 transition-colors">
               <Target className="h-4 w-4" />
               Predictive Models
             </TabsTrigger>
-            <TabsTrigger value="demographics" className="flex items-center gap-2">
+            <TabsTrigger value="demographics" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:font-semibold hover:bg-blue-100 transition-colors">
               <Users className="h-4 w-4" />
               Demographics
             </TabsTrigger>
@@ -51,9 +66,12 @@ export default function GraphicalAnalysisPage() {
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-4">
-                    <div className="aspect-video bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden">
-                      <img 
-                        src="/images/graphs/monthly-trends-top-analysis.png" 
+                    <div
+                      className="aspect-video bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden cursor-pointer"
+                      onClick={() => openDialog("/images/graphs/monthly-trends-top-analysis.png")}
+                    >
+                      <img
+                        src="/images/graphs/monthly-trends-top-analysis.png"
                         alt="Monthly Crime Trends & Top Analysis"
                         className="w-full h-auto object-contain"
                       />
@@ -81,7 +99,10 @@ export default function GraphicalAnalysisPage() {
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-4">
-                     <div className="aspect-video bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden">
+                     <div
+                        className="aspect-video bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden cursor-pointer"
+                        onClick={() => openDialog("/images/graphs/top10-crime-prone-cities-distribution.png")}
+                     >
   <img 
     src="/images/graphs/top10-crime-prone-cities-distribution.png" 
     alt="Top 10 Crime Prone Cities & Distribution"
@@ -106,7 +127,9 @@ export default function GraphicalAnalysisPage() {
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-4">
-                    <div className="aspect-video bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden">
+                    <div className="aspect-video bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden cursor-pointer"
+                      onClick={() => openDialog("/images/graphs/crime-heatmap-age-group-city.png")}
+                    >
                       <img 
                         src="/images/graphs/crime-heatmap-age-group-city.png" 
                         alt="Crime Heatmap: Age Group vs City"
@@ -130,7 +153,10 @@ export default function GraphicalAnalysisPage() {
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-4">
-                   <div className="aspect-video bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden">
+                   <div
+                      className="aspect-video bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden cursor-pointer"
+                      onClick={() => openDialog("/images/graphs/crime-distribution-age-group-city.png")}
+                   >
   <img 
     src="/images/graphs/crime-distribution-age-group-city.png" 
     alt="Crime Distribution by Age Group & City"
@@ -165,7 +191,10 @@ export default function GraphicalAnalysisPage() {
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-4">
-                    <div className="aspect-video bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden">
+                    <div
+                      className="aspect-video bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden cursor-pointer"
+                      onClick={() => openDialog("/images/graphs/crime-trend-by-city-over-years.png")}
+                    >
                       <img 
                         src="/images/graphs/crime-trend-by-city-over-years.png" 
                         alt="Crime Trend by City Over Years"
@@ -189,7 +218,10 @@ export default function GraphicalAnalysisPage() {
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-4">
-                   <div className="aspect-video bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden">
+                   <div
+                      className="aspect-video bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden cursor-pointer"
+                      onClick={() => openDialog("/images/graphs/crime-gender-types-weapons.png")}
+                   >
   <img 
     src="/images/graphs/crime-gender-types-weapons.png" 
     alt="Crime by Gender, Types & Weapons"
@@ -225,7 +257,10 @@ export default function GraphicalAnalysisPage() {
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-4">
-                    <div className="aspect-video bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden">
+                    <div
+                      className="aspect-video bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden cursor-pointer"
+                      onClick={() => openDialog("/images/graphs/model-accuracy-error-tolerance.png")}
+                    >
                       <img 
                         src="/images/graphs/model-accuracy-error-tolerance.png" 
                         alt="Model Accuracy vs Error Tolerance"
@@ -249,7 +284,10 @@ export default function GraphicalAnalysisPage() {
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-4">
-                    <div className="aspect-video bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden">
+                    <div
+                      className="aspect-video bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden cursor-pointer"
+                      onClick={() => openDialog("/images/graphs/model-evaluation-metrics.png")}
+                    >
                       <img 
                         src="/images/graphs/model-evaluation-metrics.png" 
                         alt="Model Evaluation Metrics"
@@ -275,7 +313,10 @@ export default function GraphicalAnalysisPage() {
             {/* Visualization 1 */}
             <Card className="shadow-md hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-4">
-                <div className="aspect-square bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden mb-3">
+                <div
+                  className="aspect-square bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden mb-3 cursor-pointer"
+                  onClick={() => openDialog("/images/graphs/monthly-trends-top-analysis.png")}
+                >
                   <img 
                     src="/images/graphs/monthly-trends-top-analysis.png" 
                     alt="Monthly Trends & Top Analysis"
@@ -292,7 +333,10 @@ export default function GraphicalAnalysisPage() {
             {/* Visualization 2 */}
             <Card className="shadow-md hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-4">
-                <div className="aspect-square bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden mb-3">
+                <div
+                  className="aspect-square bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden mb-3 cursor-pointer"
+                  onClick={() => openDialog("/images/graphs/crime-distribution-age-group-city.png")}
+                >
                   <img 
                     src="/images/graphs/crime-distribution-age-group-city.png" 
                     alt="Age Group & City Distribution"
@@ -309,7 +353,10 @@ export default function GraphicalAnalysisPage() {
             {/* Visualization 3 */}
             <Card className="shadow-md hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-4">
-                <div className="aspect-square bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden mb-3">
+                <div
+                  className="aspect-square bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden mb-3 cursor-pointer"
+                  onClick={() => openDialog("/images/graphs/crime-heatmap-age-group-city.png")}
+                >
                   <img 
                     src="/images/graphs/crime-heatmap-age-group-city.png" 
                     alt="Crime Heatmap Analysis"
@@ -326,7 +373,10 @@ export default function GraphicalAnalysisPage() {
             {/* Visualization 4 */}
             <Card className="shadow-md hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-4">
-                <div className="aspect-square bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden mb-3">
+                <div
+                  className="aspect-square bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden mb-3 cursor-pointer"
+                  onClick={() => openDialog("/images/graphs/top10-crime-prone-cities-distribution.png")}
+                >
                   <img 
                     src="/images/graphs/top10-crime-prone-cities-distribution.png" 
                     alt="Top Crime Prone Cities"
@@ -343,7 +393,10 @@ export default function GraphicalAnalysisPage() {
             {/* Visualization 5 */}
             <Card className="shadow-md hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-4">
-                <div className="aspect-square bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden mb-3">
+                <div
+                  className="aspect-square bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden mb-3 cursor-pointer"
+                  onClick={() => openDialog("/images/graphs/crime-trend-by-city-over-years.png")}
+                >
                   <img 
                     src="/images/graphs/crime-trend-by-city-over-years.png" 
                     alt="Crime Trends by City"
@@ -360,7 +413,10 @@ export default function GraphicalAnalysisPage() {
             {/* Visualization 6 */}
             <Card className="shadow-md hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-4">
-                <div className="aspect-square bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden mb-3">
+                <div
+                  className="aspect-square bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden mb-3 cursor-pointer"
+                  onClick={() => openDialog("/images/graphs/crime-gender-types-weapons.png")}
+                >
                   <img 
                     src="/images/graphs/crime-gender-types-weapons.png" 
                     alt="Victim Demographics"
@@ -377,7 +433,10 @@ export default function GraphicalAnalysisPage() {
             {/* Visualization 7 */}
             <Card className="shadow-md hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-4">
-                <div className="aspect-square bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden mb-3">
+                <div
+                  className="aspect-square bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden mb-3 cursor-pointer"
+                  onClick={() => openDialog("/images/graphs/model-accuracy-error-tolerance.png")}
+                >
                   <img 
                     src="/images/graphs/model-accuracy-error-tolerance.png" 
                     alt="Model Accuracy Analysis"
@@ -394,7 +453,10 @@ export default function GraphicalAnalysisPage() {
             {/* Visualization 8 */}
             <Card className="shadow-md hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-4">
-                <div className="aspect-square bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden mb-3">
+                <div
+                  className="aspect-square bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden mb-3 cursor-pointer"
+                  onClick={() => openDialog("/images/graphs/model-evaluation-metrics.png")}
+                >
                   <img 
                     src="/images/graphs/model-evaluation-metrics.png" 
                     alt="Model Evaluation"
@@ -410,6 +472,18 @@ export default function GraphicalAnalysisPage() {
           </div>
         </div>
       </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-4xl p-0 overflow-hidden">
+          {selectedImage && (
+            <img
+              src={selectedImage}
+              alt="Expanded Graph"
+              className="w-full h-full object-contain"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
