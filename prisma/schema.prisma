@@ -1,0 +1,110 @@
+// Prisma schema for CrimeSafe
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model CrimeRecord {
+  id                String   @id @default(cuid())
+  reportNo          String   @map("report_no")
+  dateReported      DateTime @map("date_reported")
+  dateOfOccurrence  DateTime @map("date_of_occurrence")
+  year              Int
+  month             Int
+  day               Int
+  weekday           Int
+  city              String
+  crimeCode         String   @map("crime_code")
+  crimeDescription  String   @map("crime_description")
+  victimAge         Int?     @map("victim_age")
+  victimGender      String?  @map("victim_gender")
+  latitude          Float?
+  longitude         Float?
+  locationId        String?  @map("location_id")
+  severity          Int      @default(1)
+  
+  createdAt         DateTime @default(now()) @map("created_at")
+  
+  @@index([year, month, city])
+  @@index([locationId, year])
+  @@index([city, year])
+  @@map("crime_records")
+}
+
+model LocationStats {
+  id                String   @id @default(cuid())
+  locationId        String   @unique @map("location_id")
+  locationName      String   @map("location_name")
+  city              String
+  latitude          Float
+  longitude         Float
+  population        Int?
+  totalCrimes       Int      @default(0) @map("total_crimes")
+  
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  
+  @@index([city])
+  @@map("location_stats")
+}
+
+model MonthlyAggregation {
+  id                String   @id @default(cuid())
+  locationId        String   @map("location_id")
+  year              Int
+  month             Int
+  crimeCount        Int      @map("crime_count")
+  crimeRate         Float?   @map("crime_rate")
+  zoneClassification String? @map("zone_classification") // red, amber, green
+  
+  // Demographic breakdowns
+  maleVictims       Int      @default(0) @map("male_victims")
+  femaleVictims     Int      @default(0) @map("female_victims")
+  avgVictimAge      Float?   @map("avg_victim_age")
+  
+  createdAt         DateTime @default(now()) @map("created_at")
+  
+  @@unique([locationId, year, month])
+  @@index([year, month])
+  @@index([locationId])
+  @@map("monthly_aggregations")
+}
+
+model Prediction {
+  id                String   @id @default(cuid())
+  locationId        String   @map("location_id")
+  year              Int
+  month             Int
+  predictedRate     Float    @map("predicted_rate")
+  ciLower           Float?   @map("ci_lower")
+  ciUpper           Float?   @map("ci_upper")
+  modelVersion      String   @map("model_version")
+  explanation       String?
+  featureImportance Json?    @map("feature_importance")
+  
+  createdAt         DateTime @default(now()) @map("created_at")
+  
+  @@index([locationId, year, month])
+  @@map("predictions")
+}
+
+model TrainingRun {
+  id                String   @id @default(cuid())
+  modelVersion      String   @map("model_version")
+  trainYears        String   @map("train_years") // "2020,2021,2022,2023"
+  testYear          Int      @map("test_year")
+  rmse              Float?
+  mae               Float?
+  accuracy          Float?
+  modelPath         String   @map("model_path")
+  status            String   @default("pending") // pending, running, completed, failed
+  
+  createdAt         DateTime @default(now()) @map("created_at")
+  completedAt       DateTime? @map("completed_at")
+  
+  @@map("training_runs")
+}
